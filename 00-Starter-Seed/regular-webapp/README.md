@@ -4,7 +4,7 @@ This is the seed project you need to use if you're going to create regular Webap
 
 Check the [Play 2 Scala Quickstart](https://auth0.com/docs/quickstart/webapp/scala) to better understand this sample.
 
-#Running the example
+# Running the example
 
 In order to run the example you need to have `sbt` installed.
 
