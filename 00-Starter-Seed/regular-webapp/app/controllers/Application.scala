@@ -7,6 +7,7 @@ import play.api.mvc.Controller
 import helpers.Auth0Config
 import java.security.SecureRandom
 import java.math.BigInteger
+import java.util.UUID.randomUUID
 
 
 class Application @Inject() (cache: CacheApi) extends Controller {
@@ -26,12 +27,14 @@ class Application @Inject() (cache: CacheApi) extends Controller {
       }
     }
     val state = RandomUtil.alphanumeric()
+
     var audience = config.audience
-    cache.set("state", state)
     if (config.audience == ""){
-      audience = String.format("https://%s/userinfo",config.domain)
+      audience = String.format("https://%s/userinfo", config.domain)
     }
 
+    val id = randomUUID().toString
+    cache.set(id + "state", state)
     val query = String.format(
       "authorize?client_id=%s&redirect_uri=%s&response_type=code&scope=openid profile&audience=%s&state=%s",
       config.clientId,
@@ -39,13 +42,13 @@ class Application @Inject() (cache: CacheApi) extends Controller {
       audience,
       state
     )
-    Redirect(String.format("https://%s/%s",config.domain,query))
+    Redirect(String.format("https://%s/%s", config.domain, query)).withSession("id" -> id)
   }
 
   def logout = Action {
     val config = Auth0Config.get()
     Redirect(String.format(
-      "https://%s/v2/logout?client_id=%s&returnTo=http://localhost:9000",
+      "https://%s/v2/logout?client_id=%s&returnTo=http://localhost:3000",
       config.domain,
       config.clientId)
     ).withNewSession
