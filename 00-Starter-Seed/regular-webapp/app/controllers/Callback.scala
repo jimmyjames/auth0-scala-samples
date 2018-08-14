@@ -17,19 +17,16 @@ import helpers.Auth0Config
 
 class Callback @Inject() (cache: CacheApi, ws: WSClient) extends Controller {
   
-  def callback(codeOpt: Option[String] = None, stateOpt: Option[String] = None) = Action.async {
-    if (stateOpt == cache.get("state")) {
+  def callback(codeOpt: Option[String] = None, stateOpt: Option[String] = None) = Action.async { request =>
+    val sessionId = request.session.get("id").get
+    if (stateOpt == cache.get(sessionId + "state")) {
       (for {
         code <- codeOpt
       } yield {
-        getToken(code).flatMap { case (idToken, accessToken) =>
+        getToken(code, sessionId).flatMap { case (idToken, accessToken) =>
           getUser(accessToken).map { user =>
-            cache.set(idToken + "profile", user)
+            cache.set(request.session.get("id").get + "profile", user)
             Redirect(routes.User.index())
-              .withSession(
-                "idToken" -> idToken,
-                "accessToken" -> accessToken
-              )
           }
 
         }.recover {
@@ -41,7 +38,7 @@ class Callback @Inject() (cache: CacheApi, ws: WSClient) extends Controller {
     }
   }
 
-  def getToken(code: String): Future[(String, String)] = {
+  def getToken(code: String, sessionId: String): Future[(String, String)] = {
     val config = Auth0Config.get()
     var audience = config.audience
     if (config.audience == ""){
@@ -65,7 +62,9 @@ class Callback @Inject() (cache: CacheApi, ws: WSClient) extends Controller {
         idToken <- (response.json \ "id_token").asOpt[String]
         accessToken <- (response.json \ "access_token").asOpt[String]
       } yield {
-        Future.successful((idToken, accessToken)) 
+        cache.set(sessionId + "id_token", idToken)
+        cache.set(sessionId + "access_token", accessToken)
+        Future.successful((idToken, accessToken))
       }).getOrElse(Future.failed[(String, String)](new IllegalStateException("Tokens not sent")))
     }
     

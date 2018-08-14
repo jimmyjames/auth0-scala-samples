@@ -11,5 +11,5 @@ RUN cd /tmp/build && \
 COPY . /root/app/
 WORKDIR /root/app
 RUN sbt compile
-CMD ["sbt", "run"]
-EXPOSE 9000
+CMD sbt "run 3000"
+EXPOSE 3000
