@@ -1,5 +1,7 @@
 # Auth0 Play2 Scala
 
+[![CircleCI](https://circleci.com/gh/auth0-community/auth0-scala-samples.svg?style=svg)](https://circleci.com/gh/auth0-community/auth0-scala-samples)
+
 This is the seed project you need to use if you're going to create regular Webapp with Scala and Play2.
 
 ## What is Auth0?
