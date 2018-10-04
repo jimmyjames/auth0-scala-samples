@@ -18,14 +18,14 @@ __Note:__ If you are not implementing any API, leave `AUTH0_AUDIENCE` empty, wil
 AUTH0_CLIENT_ID={CLIENT_ID}
 AUTH0_DOMAIN={DOMAIN}
 AUTH0_CLIENT_SECRET={CLIENT_SECRET}
-AUTH0_CALLBACK_URL="http://localhost:9000/callback"
+AUTH0_CALLBACK_URL="http://localhost:3000/callback"
 AUTH0_AUDIENCE={AUDIENCE}
 ````
 
-Register `http://localhost:9000/callback` as `Allowed Callback URLs` and `http://localhost:9000`
+Register `http://localhost:3000/callback` as `Allowed Callback URLs` and `http://localhost:3000`
 as `Allowed Logout URLs` in your app settings.
 
-Finally, run `sbt run` to start the app and try calling [http://localhost:9000/](http://localhost:9000/)
+Finally, run `sbt run 3000` to start the app and try calling [http://localhost:3000/](http://localhost:3000/)
 
 ## Running the example with docker
 
