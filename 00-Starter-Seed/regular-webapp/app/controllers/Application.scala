@@ -9,15 +9,18 @@ import java.security.SecureRandom
 import java.math.BigInteger
 import java.util.UUID.randomUUID
 
+import play.api.Configuration
 
-class Application @Inject() (cache: CacheApi) extends Controller {
+
+class Application @Inject() (cache: CacheApi, configuration: Configuration) extends Controller {
+
+  private val config = Auth0Config.get(configuration)
 
   def index = Action {
     Ok(views.html.index())
   }
 
   def login = Action {
-    val config = Auth0Config.get()
     // Generate random state parameter
     object RandomUtil {
       private val random = new SecureRandom()
@@ -46,7 +49,6 @@ class Application @Inject() (cache: CacheApi) extends Controller {
   }
 
   def logout = Action {
-    val config = Auth0Config.get()
     Redirect(String.format(
       "https://%s/v2/logout?client_id=%s&returnTo=http://localhost:3000",
       config.domain,

@@ -2,7 +2,6 @@ package controllers
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-
 import javax.inject.Inject
 import play.api.cache._
 import play.api.http.HeaderNames
@@ -14,9 +13,12 @@ import play.api.libs.ws._
 import play.api.mvc.Action
 import play.api.mvc.Controller
 import helpers.Auth0Config
+import play.api.Configuration
 
-class Callback @Inject() (cache: CacheApi, ws: WSClient) extends Controller {
-  
+class Callback @Inject() (cache: CacheApi, ws: WSClient, configuration: Configuration) extends Controller {
+
+  private val config = Auth0Config.get(configuration)
+
   def callback(codeOpt: Option[String] = None, stateOpt: Option[String] = None) = Action.async { request =>
     val sessionId = request.session.get("id").get
     if (stateOpt == cache.get(sessionId + "state")) {
@@ -39,7 +41,6 @@ class Callback @Inject() (cache: CacheApi, ws: WSClient) extends Controller {
   }
 
   def getToken(code: String, sessionId: String): Future[(String, String)] = {
-    val config = Auth0Config.get()
     var audience = config.audience
     if (config.audience == ""){
       audience = String.format("https://%s/userinfo",config.domain)
@@ -56,7 +57,7 @@ class Callback @Inject() (cache: CacheApi, ws: WSClient) extends Controller {
           "audience" -> audience
         )
       )
-      
+
     tokenResponse.flatMap { response =>
       (for {
         idToken <- (response.json \ "id_token").asOpt[String]
@@ -67,11 +68,10 @@ class Callback @Inject() (cache: CacheApi, ws: WSClient) extends Controller {
         Future.successful((idToken, accessToken))
       }).getOrElse(Future.failed[(String, String)](new IllegalStateException("Tokens not sent")))
     }
-    
+
   }
-  
+
   def getUser(accessToken: String): Future[JsValue] = {
-    val config = Auth0Config.get()
     val userResponse = ws.url(String.format("https://%s/userinfo", config.domain))
       .withQueryString("access_token" -> accessToken)
       .get()
