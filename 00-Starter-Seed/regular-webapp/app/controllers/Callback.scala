@@ -10,8 +10,7 @@ import play.api.libs.json.JsValue
 import play.api.libs.json.Json
 import play.api.libs.json.Json.toJsFieldJsValueWrapper
 import play.api.libs.ws._
-import play.api.mvc.Action
-import play.api.mvc.Controller
+import play.api.mvc.{Action, AnyContent, Controller}
 import helpers.Auth0Config
 import play.api.Configuration
 
@@ -19,7 +18,7 @@ class Callback @Inject() (cache: CacheApi, ws: WSClient, configuration: Configur
 
   private val config = Auth0Config.get(configuration)
 
-  def callback(codeOpt: Option[String] = None, stateOpt: Option[String] = None) = Action.async { request =>
+  def callback(codeOpt: Option[String] = None, stateOpt: Option[String] = None): Action[AnyContent] = Action.async { request =>
     val sessionId = request.session.get("id").get
     if (stateOpt == cache.get(sessionId + "state")) {
       (for {

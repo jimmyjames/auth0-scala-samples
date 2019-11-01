@@ -2,8 +2,7 @@ package controllers
 
 import javax.inject.Inject
 import play.api.cache._
-import play.api.mvc.Action
-import play.api.mvc.Controller
+import play.api.mvc.{Action, AnyContent, Controller}
 import helpers.Auth0Config
 import java.security.SecureRandom
 import java.math.BigInteger
@@ -16,11 +15,11 @@ class Application @Inject() (cache: CacheApi, configuration: Configuration) exte
 
   private val config = Auth0Config.get(configuration)
 
-  def index = Action {
+  def index: Action[AnyContent] = Action {
     Ok(views.html.index())
   }
 
-  def login = Action {
+  def login: Action[AnyContent] = Action {
     // Generate random state parameter
     object RandomUtil {
       private val random = new SecureRandom()
@@ -48,11 +47,18 @@ class Application @Inject() (cache: CacheApi, configuration: Configuration) exte
     Redirect(String.format("https://%s/%s", config.domain, query)).withSession("id" -> id)
   }
 
-  def logout = Action {
+  def logout: Action[AnyContent] = Action { request =>
+    val host = request.host
+    var scheme = "http"
+    if (request.secure) {
+      scheme = "https"
+    }
+    val returnTo = scheme + "://" + host
     Redirect(String.format(
-      "https://%s/v2/logout?client_id=%s&returnTo=http://localhost:3000",
+      "https://%s/v2/logout?client_id=%s&returnTo=%s",
       config.domain,
-      config.clientId)
+      config.clientId,
+      returnTo)
     ).withNewSession
   }
 }
