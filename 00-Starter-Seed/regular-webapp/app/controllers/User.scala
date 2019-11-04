@@ -1,8 +1,7 @@
 package controllers
 
 import javax.inject.Inject
-import play.api.mvc._
-import play.api.mvc.{Action, Controller}
+import play.api.mvc.{Action, AnyContent, Controller, Request, Result}
 import play.api.libs.json._
 import play.api.cache._
 
@@ -20,7 +19,7 @@ class User @Inject() (cache: CacheApi) extends Controller {
     }
   }
   
-  def index = AuthenticatedAction { request =>
+  def index: Action[AnyContent] = AuthenticatedAction { request =>
     val id = request.session.get("id").get
     val profile = cache.get[JsValue](id + "profile").get
     Ok(views.html.user(profile))
